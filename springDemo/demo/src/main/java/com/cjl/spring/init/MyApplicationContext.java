@@ -1,9 +1,6 @@
 package com.cjl.spring.init;
 
-import com.cjl.spring.annotation.MyAutowire;
-import com.cjl.spring.annotation.MyComponent;
-import com.cjl.spring.annotation.MyComponentScan;
-import com.cjl.spring.annotation.MyScope;
+import com.cjl.spring.annotation.*;
 import com.cjl.spring.cache.BeanDefinition;
 
 import java.io.File;
@@ -36,12 +33,18 @@ public class MyApplicationContext {
     private void createSingletonBean(){
         for (String bean : beanDefinitationMap.keySet()) {
             BeanDefinition beanDefinition = beanDefinitationMap.get(bean);
-            if ("Singleton".equals(beanDefinition.getScope())){
+            if ("Singleton".equals(beanDefinition.getScope()) && !beanDefinition.getLazy()){
                 Object newBean = createBean(bean, beanDefinition);
-                //将单例实例放入到单例池中
+                //将单例实例并且不是懒加载的放入到单例池中
                 singletonBean.put(bean, newBean);
             }
         }
+    }
+
+    private Object createLazyBean(String beanName, BeanDefinition beanDefinition){
+        Object lazyBean = createBean(beanName, beanDefinition);
+        singletonBean.put(beanName, lazyBean);
+        return lazyBean;
     }
 
     private Object createBean(String beanName, BeanDefinition beanDefinition){
@@ -87,6 +90,12 @@ public class MyApplicationContext {
                     String simpleName = clazz.getSimpleName();
                     key = simpleName.substring(0, 1).toLowerCase().concat(simpleName.substring(1));
                     beanDefinition.setName(key);
+                }
+                //解析懒加载的注解
+                if(clazz.isAnnotationPresent(MyLazy.class)){
+                    beanDefinition.setLazy(true);
+                }else {
+                    beanDefinition.setLazy(false);
                 }
                 //解析scope
                 if (clazz.isAnnotationPresent(MyScope.class)){
@@ -139,6 +148,12 @@ public class MyApplicationContext {
         if (singletonBean.containsKey(beanName)){
             return singletonBean.get(beanName);
         }else {
+            BeanDefinition lazyBean = beanDefinitationMap.get(beanName);
+            //这里暂时不考虑懒加载并且是原型的以及其他情况
+            if (lazyBean.getLazy()){
+                Object backBean = createLazyBean(beanName, lazyBean);
+                return backBean;
+            }
             //没有实例化bean的时候 例如懒加载或者原形
             BeanDefinition beanDefinition = beanDefinitationMap.get(beanName);
             return createBean(beanName, beanDefinition);

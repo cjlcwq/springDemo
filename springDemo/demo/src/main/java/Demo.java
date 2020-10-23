@@ -10,6 +10,9 @@ public class Demo {
         MyApplicationContext myApplicationContext = new MyApplicationContext(AppConfig.class);
         OrderService bean = (OrderService) myApplicationContext.myGetBean("orderService");
         bean.getOrder();
+        System.out.println(myApplicationContext.myGetBean("lazyService"));
+        System.out.println(myApplicationContext.myGetBean("lazyService"));
+        System.out.println(myApplicationContext.myGetBean("lazyService"));
     }
 
 }
