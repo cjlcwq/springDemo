@@ -1,8 +1,0 @@
-package com.cjl.design.AbstractFactory;
-
-public class TCL1 implements TCLProduct {
-    @Override
-    public void produce() {
-        System.out.println("生产TCL的电视机");
-    }
-}
