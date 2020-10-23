@@ -27,7 +27,9 @@ public class MyApplicationContext {
     private ConcurrentHashMap<String, Object> singletonBean = new ConcurrentHashMap();
 
     public MyApplicationContext(Class configClass){
+        //扫描指定包下的所有类，并将需要交给spring管理的类都进行解析并放入beanDefinitationMap中
         scan(configClass);
+        //将符合条件的单例bean在初始化的时候就放入到单例池中
         createSingletonBean();
     }
 
@@ -93,6 +95,7 @@ public class MyApplicationContext {
                     if ("prototype".equals(scopeValue)){
                         beanDefinition.setScope("prototype");
                     }else {
+                        //不考虑输入的其他情况 一律考虑为单例
                         beanDefinition.setScope("Singleton");
                     }
                 }else {
